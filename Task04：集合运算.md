@@ -31,6 +31,18 @@ SELECT product_id, product_name
 SELECT product_id, product_name
   FROM Product2;
 ```
+- product
+
+![image-20201220190624736](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201220190624.png)
+
+- product2
+
+![image-20201220190705016](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201220190705.png)
+
+- product union product2
+
+![image-20201220190750003](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201220190750.png)
+
 上述结果包含了两张表中的全部商品. 你会发现,这就是我们在学校学过的集合中的并集运算,通过文氏图会看得更清晰（图 7-1):
 
 ![图片](img/ch04/ch04.03union.png)
@@ -71,12 +83,13 @@ SELECT  product_id,product_name,product_type
  WHERE sale_price < 800 
     OR sale_price > 1.5 * purchase_price;
 ```
-### 
+
+
 ### 4.1.2.2 UNION 与 OR 谓词
 
 对于上边的练习题, 如果你已经正确地写出来查询, 你会发现, 使用 UNION 对两个查询结果取并集, 和在一个查询中使用 WHERE 子句, 然后使用 OR 谓词连接两个查询条件, 能够得到相同的结果.
 
-那么是不是就没必要引入 UNION 了呢? 当然不是这样的. 确实, 对于同一个表的两个不同的筛选结果集, 使用 UNION 对两个结果集取并集, 和把两个子查询的筛选条件用  OR 谓词连接, 会得到相同的结果, 但倘若要将两个不同的表中的结果合并在一起, 就不得不使用 UNION 了. 
+那么是不是就没必要引入 UNION 了呢? 当然不是这样的. 确实, 对于同一个表的两个不同的筛选结果集, 使用 UNION 对两个结果集取并集, 和把两个子查询的筛选条件用  OR 谓词连接, 会得到相同的结果, **但倘若要将两个不同的表中的结果合并在一起, 就不得不使用 UNION 了.** 
 
 而且, 即便是对于同一张表, 有时也会出于查询效率方面的因素来使用 UNION.
 
@@ -108,11 +121,21 @@ SELECT * 
 
 找出 Product 和 Product2 中售价高于 500 的商品的基本信息.
 
+```sql
+SELECT * FROM product
+WHERE sale_price > 500
+UNION
+SELECT * FROM product2
+WHERE sale_price > 500;
+```
+
+![image-20201220192548297](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201220192548.png)
+
 参考答案略.
 
-### 4.1.2.3 包含重复行的集合运算 UNION ALL
+### 4.1.2.3 保留重复行的集合运算 UNION ALL
 
-在1.1.1 中我们发现, SQL 语句的 UNION 会对两个查询的结果集进行合并和去重, 这种去重不仅会去掉两个结果集相互重复的, 还会去掉一个结果集中的重复行. 但在实践中有时候需要需要不去重的并集, 在 UNION 的结果中保留重复行的语法其实非常简单,只需要在 UNION 后面添加 ALL 关键字就可以了. 
+在1.1.1 中我们发现, SQL 语句的 UNION 会对两个查询的结果集进行合并和去重, 这种去重不仅会去掉两个结果集相互重复的, 还会去掉一个结果集中的重复行. 但在实践中有时候需要不去重的并集, 在 UNION 的结果中保留重复行的语法其实非常简单,只需要在 UNION 后面添加 ALL 关键字就可以了. 
 
 例如,  想要知道 Product 和 Product2 中所包含的商品种类及每种商品的数量, 第一步,就需要将两个表的商品种类字段选出来, 然后使用 UNION ALL 进行不去重地合并. 接下来再对两个表的结果按 Product_type 字段分组计数.
 
@@ -132,33 +155,34 @@ SELECT product_id, product_name
 
 商店决定对product表中利润低于50%和售价低于1000的商品提价, 请使用UNION ALL 语句将分别满足上述两个条件的结果取并集. 查询结果类似下表: 
 
-![图片](img/ch04/ch04.06result3.png)
+![image-20201220193339461](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201220193339.png)
 
 参考答案
 
 ```sql
 SELECT * 
-  FROM Product 
- WHERE sale_price < 1000
- UNION ALL
+FROM Product 
+WHERE sale_price < 1000
+UNION ALL
 SELECT * 
-  FROM Product 
- WHERE sale_price > 1.5 * purchase_price
+FROM Product 
+WHERE sale_price < 1.5 * purchase_price;
 ```
 ### 4.1.2.4 [扩展阅读]bag 模型与 set 模型 
 
 在高中数学课上我们就学过, 集合的一个显著的特征就是集合中的元素都是互异的. 当我们把数据库中的表看作是集合的时候, 实际上存在一些问题的: 不论是有意的设计或无意的过失, 很多数据库中的表包含了重复的行. 
 
-Bag 是和 set 类似的一种数学结构, 不一样的地方在于: bag 里面允许存在重复元素, 如果同一个元素被加入多次, 则袋子里就有多个该元素.
+Bag 是和 set 类似的一种数学结构, 不一样的地方在于: **bag 里面允许存在重复元素, 如果同一个元素被加入多次, 则袋子里就有多个该元素.**
 
-通过上述 bag 与 set 定义之间的差别我们就发现, 使用 bag 模型来描述数据库中的表在很多时候更加合适. 
+通过上述 bag 与 set 定义之间的差别我们就发现, **使用 bag 模型来描述数据库中的表在很多时候更加合适.** 
 
-是否允许元素重复导致了 set 和 bag 的并交差等运算都存在一些区别. 以 bag 的交为例, 由于 bag 允许元素重复出现, 对于两个 bag, 他们的并运算会按照: **1.该元素是否至少在一个 bag 里出现过, 2.该元素在两个 bag 中的最大出现次数** 这两个方面来进行计算. 因此对于 A = {1,1,1,2,3,5,7}, B = {1,1,2,2,4,6,8} 两个 bag, 它们的并就等于 {1,1,1,2,2,3,4,5,6,7,8}. 
+是否允许元素重复导致了 set 和 bag 的并交差等运算都存在一些区别. 以 bag 的交为例, 由于 bag 允许元素重复出现, 对于两个 bag, 他们的并运算会按照: **1.该元素是否至少在一个 bag 里出现过, 2.该元素在两个 bag 中的最大出现次数** 这两个方面来进行计算. 因此对于 A = {1,1,1,2,3,5,7}, B = {1,1,2,2,4,6,8} 两个 bag, 它们的并就等于 {1,1,1,2,2,3,4,5,6,7,8}.    
 
-### 
+3、4、5、6、7是第一条即可，1、2是按照第一、二条来。
+
 ### 4.1.2.5 隐式类型转换
 
-通常来说, 我们会把类型完全一致, 并且代表相同属性的列使用 UNION 合并到一起显示, 但有时候, 即使数据类型不完全相同, 也会通过隐式类型转换来将两个类型不同的列放在一列里显示, 例如字符串和数值类型: 
+​		通常来说, 我们会把类型完全一致, 并且代表相同属性的列使用 UNION 合并到一起显示, 但有时候, 即使数据类型不完全相同, 也会通过隐式类型转换来将两个类型不同的列放在一列里显示, 例如字符串和数值类型：
 
 ```sql
 SELECT product_id, product_name, '1'
@@ -173,22 +197,18 @@ SELECT product_id, product_name,sale_price
 
 **练习题:**
 
-使用 SYSDATE()函数可以返回当前日期时间, 是一个日期时间类型的数据, 试测试该数据类型和数值,字符串等类型的兼容性. 
+使用 SYSDATE()函数可以返回当前日期时间, 是一个日期时间类型的数据, 试测试该数据类型和数值,字符串等类型的兼容性。
 
 例如, 以下代码可以正确执行, 说明时间日期类型和字符串,数值以及缺失值均能兼容. 
 
 ```sql
 SELECT SYSDATE(), SYSDATE(), SYSDATE()
- 
- UNION
- 
-SELECT 'chars', 123,  null
+UNION
+SELECT 'chars', 123,NULL;
 ```
 上述代码的查询结果:
 
- ![图片](img/ch04/ch04.08result5.png)
-
-
+![image-20201220194951644](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201220194951.png)
 
 ## 4.1.3 MySQL 8.0 不支持交运算INTERSECT
 
@@ -202,30 +222,30 @@ SELECT product_id, product_name
   
 INTERSECT
 SELECT product_id, product_name
-  FROM Product2
+  FROM Product2;
 ```
 >错误代码：1064
 >You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'SELECT product_id, product_name
 >FROM Product2
-### 
 ### 4.1.3.1 [扩展阅读]bag 的交运算 
 
-对于两个 bag, 他们的交运算会按照: **1.该元素是否同时属于两个 bag, 2.该元素在两个 bag 中的最小出现次数**这两个方面来进行计算. 因此对于 A = {1,1,1,2,3,5,7}, B = {1,1,2,2,4,6,8} 两个 bag, 它们的交运算结果就等于 {1,1,2}. 
+对于两个 bag, 他们的交运算会按照: **1.该元素是否同时属于两个 bag, 2.该元素在两个 bag 中的最小出现次数**这两个方面来进行计算. 因此对于 A = {1,1,1,2,3,5,7}, B = {1,1,2,2,4,6,8} 两个 bag, 它们的交运算结果就等于 {1,1,2}。
 
 ## 4.1.4 差集,补集与表的减法
 
-求集合差集的减法运算和实数的减法运算有些不同, 当使用一个集合A减去另一个集合B的时候,对于只存在于集合B而不存在于集合A的元素, 采取直接忽略的策略,因此集合A和B做减法只是将集合A中也同时属于集合B的元素减掉. 
+​		求集合差集的减法运算和实数的减法运算有些不同, 当使用一个集合A减去另一个集合B的时候,对于只存在于集合B而不存在于集合A的元素, 采取直接忽略的策略,因此集合A和B做减法只是将集合A中也同时属于集合B的元素减掉。 A-B = A-(A∩B)
 
 ![图片](img/ch04/ch04.09except.png)
 
-### 
 ### 4.1.4.1 MySQL 8.0 还不支持 EXCEPT 运算
 
-MySQL 8.0 还不支持 表的减法运算符 EXCEPT. 不过, 借助第六章学过的NOT IN 谓词, 我们同样可以实现表的减法.
+​		MySQL 8.0 还不支持 表的减法运算符 EXCEPT。不过, 借助第六章学过的NOT IN 谓词, 我们同样可以实现表的减法。
+
+> 使用NOT IN谓词，实现表的减法。
 
 **练习题****:**
 
-找出只存在于Product表但不存在于Product2表的商品.
+找出只存在于Product表但不存在于Product2表的商品。
 
 ```sql
 -- 使用 IN 子句的实现方法
@@ -240,21 +260,27 @@ SELECT *
 
 **练习题:**
 
-使用NOT谓词进行集合的减法运算, 求出Product表中, 售价高于2000,但利润低于30%的商品, 结果应该如下表所示.
+使用NOT谓词进行集合的减法运算, 求出Product表中, 售价高于2000,但利润不低于30%的商品, 结果应该如下表所示.
 
 ![图片](img/ch04/ch04.10.png)
 
 参考答案:
 
 ```sql
+-- 使用了NOT IN谓词
 SELECT * 
   FROM Product
  WHERE sale_price > 2000 
    AND product_id NOT IN (SELECT product_id 
                             FROM Product 
                            WHERE sale_price<1.3*purchase_price)
+                           
+-- 一句
+SELECT * FROM product
+WHERE sale_price>2000 AND sale_price>1.3*purchase_price;
 ```
-### 
+
+
 ### 4.1.4.3 EXCEPT ALL 与bag 的差 
 
 类似于UNION ALL, EXCEPT ALL 也是按出现次数进行减法, 也是使用bag模型进行运算. 
@@ -269,7 +295,7 @@ SELECT *
 
 ### 4.1.4.4 INTERSECT 与 AND 谓词
 
-对于同一个表的两个查询结果而言, 他们的交INTERSECT实际上可以等价地将两个查询的检索条件用AND谓词连接来实现.
+对于同一个表的两个查询结果而言, 它们的交INTERSECT实际上可以等价地将两个查询的检索条件用AND谓词连接来实现.
 
 **练习题:**
 
@@ -287,15 +313,15 @@ SELECT *
 ```
 ## 4.1.5 对称差 
 
-两个集合A,B的对称差是指那些仅属于A或仅属于B的元素构成的集合. 对称差也是个非常基础的运算, 例如, 两个集合的交就可以看作是两个集合的并去掉两个集合的对称差.上述方法在其他数据库里也可以用来简单地实现表或查询结果的对称差运算: 首先使用UNION求两个表的并集, 然后使用INTERSECT求两个表的交集, 然后用并集减去交集, 就得到了对称差. 
+两个集合A,B的对称差是指那些仅属于A或仅属于B的元素构成的集合. 对称差也是个非常基础的运算, 例如, **两个集合的交就可以看作是两个集合的并去掉两个集合的对称差.**上述方法在其他数据库里也可以用来简单地实现表或查询结果的对称差运算: 首先使用UNION求两个表的并集, 然后使用INTERSECT求两个表的交集, 然后用并集减去交集, 就得到了对称差. 
 
-但由于在MySQL 8.0 里, 由于两个表或查询结果的并不能直接求出来, 因此并不适合使用上述思路来求对称差. 好在还有差集运算可以使用. 从直观上就能看出来, 两个集合的对称差等于 A-B并上B-A, 因此实践中可以用这个思路来求对称差. 
+但由于在MySQL 8.0 里, 由于两个表或查询结果的并不能直接求出来, 因此并不适合使用上述思路来求对称差. 好在还有差集运算可以使用. **从直观上就能看出来, 两个集合的对称差等于 A-B并上B-A, 因此实践中可以用这个思路来求对称差.** 
 
 **练习题:** 
 
 使用Product表和Product2表的对称差来查询哪些商品只在其中一张表, 结果类似于:
 
-![图片](img/ch04/ch04.12.png)
+<img src="img/ch04/ch04.12.png" alt="图片" style="zoom:150%;" />
 
 提示: 使用 NOT IN 实现两个表的差集.
 
@@ -304,14 +330,15 @@ SELECT *
 ```sql
 -- 使用 NOT IN 实现两个表的差集
 SELECT * 
-  FROM Product
- WHERE product_id NOT IN (SELECT product_id FROM Product2)
+FROM Product
+WHERE product_id NOT IN (SELECT product_id FROM Product2)
 UNION
 SELECT * 
-  FROM Product2
- WHERE product_id NOT IN (SELECT product_id FROM Product)
+FROM Product2
+WHERE product_id NOT IN (SELECT product_id FROM Product);
 ```
-### 
+
+
 ### 4.1.5.1 借助并集和差集迂回实现交集运算 INTERSECT
 
 通过观察集合运算的文氏图, 我们发现, 两个集合的交可以看作是两个集合的并去掉两个集合的对称差. 
@@ -322,22 +349,58 @@ SELECT *
 
 参考答案略.
 
-## 
+```sql
+SELECT * FROM product
+WHERE product_id IN(
+	 SELECT product_id FROM product
+	 UNION
+	 SELECT product_id FROM product2
+) AND product_id NOT IN (  -- 相当于  减
+	SELECT product_id
+	FROM Product
+	WHERE product_id NOT IN (SELECT product_id FROM Product2)
+	UNION
+	SELECT product_id
+	FROM Product2
+	WHERE product_id NOT IN (SELECT product_id FROM Product)
+);
+```
+
+![image-20201220205418319](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201220205418.png)
+
+
+
 # 4.2 连结(JOIN)
 
 前一节我们学习了 UNION和INTERSECT 等集合运算, 这些集合运算的特征就是以行方向为单位进行操作. 通俗地说, 就是进行这些集合运算时, 会导致记录行数的增减. 使用 UNION 会增加记录行数,而使用 INTERSECT 或者 EXCEPT 会减少记录行数.
 
 但这些运算不能改变列的变化, 虽然使用函数或者 CASE表达式等列运算, 可以增加列的数量, 但仍然只能从一张表中提供的基础信息列中获得一些"引申列", 本质上并不能提供更多的信息. 如果想要从多个表获取信息, 例如, 如果我们想要找出某个商店里的衣服类商品的名称,数量及价格等信息, 则必须分别从 ShopProduct 表和 Product 表获取信息.
 
+> PS:
+>
+> CASE表达式：可以在sql中使用if ..then..else的逻辑判断，而避免使用PL/SQL的有效方法。
+
 ![图片](img/ch04/ch04.13join.png)
 
 >注:
->截至目前,本书中出现的示例(除了关联子查询)基本上都是从一张表中选取数据,但实际上,期望得到的数据往往会分散在不同的表之中, 这时候就需要使用连结了.
+>截至目前,本书中出现的示例(除了关联子查询)基本上都是从一张表中选取数据,但**实际上,期望得到的数据往往会分散在不同的表之中, 这时候就需要使用连结join了.**
 >之前在学习关联子查询时我们发现, 使用关联子查询也可以从其他表获取信息, 但**连结**更适合从多张表获取信息.
 
-连结(JOIN)就是使用某种关联条件(一般是使用相等判断谓词"="), 将其他表中的列添加过来, 进行“添加列”的集合运算. 可以说,连结是 SQL 查询的核心操作, 掌握了连结, 能够从两张甚至多张表中获取列, 能够将过去使用关联子查询等过于复杂的查询简化为更加易读的形式, 以及进行一些更加复杂的查询. 
+> PS:
+>
+> 子查询：在嵌套查询中，一个查询语句嵌套在另一个查询语句中，相对内部的那个查询语句称为外部查询的子查询。
+>
+> 关联子查询：在嵌套查询中，关联的信息流是双向的，从外部查询，到内部子查询；再从内部子查询传回结果到外部查询。https://www.cnblogs.com/heenhui2016/p/10574695.html  ，下方有详细陈述。
 
-SQL 中的连结有多种分类方法, 我们这里使用最基础的内连结和外连结的分类方法来分别进行讲解.
+​		连结(JOIN)就是使用某种关联条件(一般是使用相等判断谓词"="), 将其他表中的列添加过来, 进行“添加列”的集合运算. 可以说,连结是 SQL 查询的核心操作, 掌握了连结, 
+
+> 连接的好处：
+>
+> 1. 能够从两张甚至多张表中获取列。
+> 2.  能够将过去使用关联子查询等过于复杂的查询简化为更加易读的形式。
+> 3. 进行一些更加复杂的查询。
+
+​		SQL 中的连结有多种分类方法, 我们这里使用最基础的内连结和外连结的分类方法来分别进行讲解. 
 
 ## 4.2.1 内连结(INNER JOIN)
 
@@ -354,7 +417,7 @@ FROM <tb_1> INNER JOIN <tb_2> ON <condition(s)>
 
 我们进一步把这个问题明确化:
 
-找出东京商店里的衣服类商品的商品名称,商品价格,商品种类,商品数量信息.
+找出**东京商店**里的衣服类商品的商品名称,商品价格,商品种类,商品数量信息.
 
 ### 4.2.1.1 使用内连结从两个表获取信息
 
@@ -366,7 +429,7 @@ FROM <tb_1> INNER JOIN <tb_2> ON <condition(s)>
 
 ![图片](img/ch04/ch04.15shopproduct.png)
 
-所以问题的关键是, 找出一个类似于"轴"或者"桥梁"的公共列, 将两张表用这个列连结起来. 这就是连结运算所要作的事情.
+所以**问题的关键**是, **找出**一个类似于"轴"或者"桥梁"的**公共列**, 将两张表用这个列连结起来. 这就是连结运算所要作的事情.
 
 我们来对比一下上述两张表, 可以发现, 商品编号列是一个公共列, 因此很自然的事情就是用这个商品编号列来作为连接的“桥梁”，将Product和ShopProduct这两张表连接起来。
 
