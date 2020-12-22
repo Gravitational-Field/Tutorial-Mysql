@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # sql教程
 
 # Task00：环境搭建
@@ -5,4 +6,122 @@
 * 在电脑上安装MySQL数据库系统
 * 安装客户端并连接到本机上的MySQL数据库
 * 使用提供的脚本创建本教程所使用的示例数据库
+=======
+# 1. Mysql8.0的卸载与安装
+
+> 由于很多人练习时，是已经安装了mysql，如有必要，可将已经安装的mysql进行卸载后，再进行重新配置最新版。
+
+## 1.1 卸载mysql（或者多个mysql服务并存？）
+
+==**PS：数据一定要导出并进行备份**==
+
+> 1. 停止mysql服务
+> 2. 删除mysql服务
+> 3. 修改mysql旧的环境变量
+
+- 管理员CMD中
+
+```bash
+//停止mysql服务
+net stop mysql
+//删除mysql服务
+mysql remove
+```
+
+![1558850718347](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201213193502.png)
+
+![](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201213193507.png)
+
+![image-20201213193754229](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201213193754.png)
+
+> 如果不需要的话，可以删除mysql所在文件夹，安装新的mysql。
+
+## 1.2 windows上安装最新版的mysql
+
+> [https://dev.mysql.com/downloads/](https://dev.mysql.com/downloads/) 找到系统对应版本，例如下载得到 mysql-installer-community-8.0.22.0.msi文件
+
+**安装细节：**
+
+**==PS:各个版本的安装有所差异==**
+
+full -> execute 然后下载很多东西（需要一段时间） ->  next ->  如图
+
+![image-20201213201114897](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201213201115.png)
+
+![image-20201213200718982](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201213200719.png)
+
+![image-20201213201201866](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201213201202.png)
+
+next-> next ->execute  -> finish -> next -> finish -> check密码，通过后next -> finish ->next -> finish
+
+安装完成
+
+## 1.3 连接 MySQL 并执行 SQL 查询
+
+在安装成功MySQL后, 我们可以通过开始菜单->控制面板->管理工具->服务中查找并开启或关闭MySQL服务.
+
+![image-20201213202205300](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201213202205.png)
+
+开启后，在开始菜单中进入，并输入密码，将登陆成功。
+
+![image-20201213202359387](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201213202359.png)
+
+- 使用mysql自带的Mysql Workbench连接Mysql
+
+> MySQL Workbench 是一款功能强大的数据库管理工具, 它既可以用于设计数据库, 也可以用于连接数据库进行查询.
+
+![image-20201213202829239](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201213202829.png)
+
+## 1.4 一些其它的第三方连接数据库的软件
+
+> 1. HeidiSQL 是一款功能非常强大的开源免费的数据库客户端软件, 采用 Delphi 语言开发, 支持 Windows 操作系统. 支持 MySQL、Postgresql、MariaDB、Percona Server 和微软的 SQL Server, 官网下载地址:[https://www.heidisql.com/download.php](https://www.heidisql.com/download.php), 下载 portable 版本后, 解压缩就可以使用.
+>
+> 2. DBeaver 是一款基于 JAV 开发的**免费和开源(GPL)**的通用数据库管理工具和 SQL 客户端, 提供windows, macOS和Linux全平台支持, 能够连接包括 MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase, Mimer, HSQLDB, Derby 等主流数据库软件在内的绝大多数兼容 JDBC 驱动的数据库. DBeaver 提供一个图形界面用来查看数据库结构、执行 SQL 查询和脚本, 浏览和导出数据, 处理 BLOB/CLOB 数据, 修改数据库结构等等.
+>
+>    由于是开源软件, 大家可直接从官网([https://dbeaver.io/](https://dbeaver.io/))下载
+>
+> 3. **==使用 Navicat 连接 MySQL  （推荐使用  破解版）==**
+>
+>    Navicat 包含了一系列的功能强大的数据库管理软件, 主要有: 完整功能版的 Navicat Premium, 以及专门用于MySQL数据库管理的 Navicat for MySQL, 用于PostgreSQL数据库管理的 Navicat forPostgreSQL, 用于SQL Server数据库管理的 Navicat for SQL Server, 用于Oracle数据库管理的 Navicat for Oracle, 等等, 但它提供的免费的版本 Navicat Lite 已足够本次课程使用, 除此之外, 上述的其他软件均为收费软件.
+>
+> 4. ==**使用 SQLyog 连接 MySQL  （这款的体验也不错）**==
+>
+>    SQLyog 是业界著名的 Webyog 公司出品的一款简洁高效、功能强大的图形化 MySQL 数据库管理工具. SQLyog 的企业版是收费软件, 但该软件也提供了社区版供大家使用, 虽然在功能上有些限制, 但对于本课程已经足够用了. SQLyog 社区版的下载地址为[https://github.com/webyog/sqlyog-community/wiki/Downloads](https://github.com/webyog/sqlyog-community/wiki/Downloads)
+>
+> 5. DataGrip的安装和连接MySQL
+>
+>    DataGrip是大名鼎鼎的 JetBrains 出品的数据库工具, 支持windows, macOS和Linux操作系统.
+
+- 使用的是Navicat进行连接
+
+## 1.5 导入sql文件
+
+==**PS：windows是大小写不敏感的。**==
+
+>由于 windows 系统默认的是大小写不敏感, 因此当表名或列名有大写字母时, 即使写的 SELECT 语句中正确地使用了大写的表名, 程序也无法正确执行. 这时候建议大家在开始学习查询之前,把表名逐一更改为小写.
+
+- 案例
+
+  根据《SQL基础教程》提供的MySQL版本的数据库,数据表的创建以及数据导入的代码, 经过一些修改, 创建了一份 sql 脚本, 运行该脚本可以一步到位地创建本文档所需的数据库shop及其中所有的表,并插入教程所需要的所有数据。=》 shop.sql
+
+- 操作流程
+
+> 1. 首先创建一个连接，连接到本地或者远程的mysql 数据库
+> 2. 创建一个shop表，如下图，字符集选择utf8mb4，来更好的支持中文
+> 3. 点击shop表右键，运行shop.sql脚本
+> 4. 刷新，关闭整个连接，并重新进行连接则可看到结果。
+
+![image-20201213205550750](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201213205550.png)
+
+![image-20201213205617805](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201213205617.png)
+
+![image-20201213210428377](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201213210428.png)
+
+- SQL 脚本的一些要点-- v 9.08
+
+>0.存储引擎使用 InnoDB, 字符集改为 utf8mb4 以更好地支持中文.
+>1.所有表名所使用的英文字母都改为小写**(后续章节中,SQL 查询中的表名也需要相应修改为小写)**
+>2.所有列名所使用的英文字母确认为小写**(后续章节中,SQL 查询中的列名也需要相应修改为小写)**
+>3.存在问题的数据, 例如 inventoryproduct 表的 inventory_id 列应为 P 开头的, 已修正为正确的数据.
+>>>>>>> 241ba2c744abe285f9dc70ba5199089fb0ea0a5c
 
