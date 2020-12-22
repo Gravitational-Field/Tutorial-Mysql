@@ -453,9 +453,9 @@ SELECT SP.shop_id
        ,P.product_type
        ,P.sale_price
        ,SP.quantity
-  FROM ShopProduct AS SP
- INNER JOIN Product AS P
-    ON SP.product_id = P.product_id;
+ FROM ShopProduct AS SP 
+ INNER JOIN product AS P 
+ ON SP.product_id = P.product_id;
 ```
 在上述查询中, 我们分别为两张表指定了简单的别名, 这种操作在使用连结时是非常常见的, 通过别名会让我们在编写查询时少打很多字, 并且更重要的是, 会让查询语句看起来更加简洁.
 上述查询将会得到如下的结果:
@@ -477,13 +477,22 @@ FROM ShopProduct AS SP INNER JOIN Product AS P
 
 在进行内连结时 ON 子句是必不可少的(大家可以试试去掉上述查询的 ON 子句后会有什么结果).
 
-ON 子句是专门用来指定连结条件的, 我们在上述查询的 ON 之后指定两张表连结所使用的列以及比较条件, 基本上, 它能起到与 WHERE 相同的筛选作用, 我们会在本章的结尾部分进一步探讨这个话题.
+```sql
+SELECT COUNT(*)
+FROM shopproduct AS SP INNER JOIN product AS P;
+```
 
-**要点三: SELECT 子句中的列最好按照 表****名****.列名 的格式来使用.**
+![image-20201222135548697](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201222135548.png)
+
+> 不指定连接条件时，将会把所有的可能都给列出来，如product表含8条记录，shopproduct含有13条记录，则内连接后总共有8*13=104条记录。
+
+**ON 子句是专门用来指定连结条件**的, 我们在上述查询的 ON 之后指定两张表连结所使用的列以及比较条件, 基本上, 它能起到与 WHERE 相同的筛选作用, 我们会在本章的结尾部分进一步探讨这个话题.
+
+**要点三: SELECT 子句中的列最好按照 <font color='red'>表名.列名</font> 的格式来使用.**
 
 当两张表的列除了用于关联的列之外, 没有名称相同的列的时候, 也可以不写表名, 但表名使得我们能够在今后的任何时间阅读查询代码的时候, 都能马上看出每一列来自于哪张表, 能够节省我们很多时间.
 
-但是, 如果两张表有其他名称相同的列, 则必须使用上述格式来选择列名, 否则查询语句会报错.
+但是, **如果两张表有其他名称相同的列, 则必须使用上述格式来选择列名, 否则查询语句会报错.**
 
 我们回到上述查询所回答的问题. 通过观察上述查询的结果, 我们发现, 这个结果离我们的目标: 找出东京商店的衣服类商品的基础信息已经很接近了. 接下来,我们只需要把这个查询结果作为一张表, 给它增加一个 WHERE 子句来指定筛选条件.
 
@@ -495,42 +504,46 @@ ON 子句是专门用来指定连结条件的, 我们在上述查询的 ON 之�
 
 增加 WHERE 子句的方式有好几种,我们先从最简单的说起.
 
-第一种增加 WEHRE 子句的方式, 就是把上述查询作为子查询, 用括号封装起来, 然后在外层查询增加筛选条件.
+- **第一种增加 WEHRE 子句的方式**
+
+把上述查询作为子查询, 用括号封装起来, 然后在外层查询增加筛选条件.
 
 ```sql
-SELECT *
-  FROM (-- 第一步查询的结果
-        SELECT SP.shop_id
-               ,SP.shop_name
-               ,SP.product_id
-               ,P.product_name
-               ,P.product_type
-               ,P.sale_price
-               ,SP.quantity
-          FROM ShopProduct AS SP
-         INNER JOIN Product AS P
-            ON SP.product_id = P.product_id) AS STEP1
- WHERE shop_name = '东京'
-   AND product_type = '衣服' ;
-```
-还记得我们学习子查询时的认识吗? 子查询的结果其实也是一张表,只不过是一张虚拟的表, 它并不真实存在于数据库中, 只是数据库中其他表经过筛选,聚合等查询操作后得到的一个"视图".
-这种写法能很清晰地分辨出每一个操作步骤, 在我们还不十分熟悉 SQL 查询每一个子句的执行顺序的时候可以帮到我们.
-
-但实际上, 如果我们熟知 WHERE 子句将在 FROM 子句之后执行, 也就是说, 在做完 INNER JOIN ... ON 得到一个新表后, 才会执行 WHERE 子句, 那么就得到标准的写法:
-
-```sql
-SELECT  SP.shop_id
+SELECT * FROM(
+-- 第一步查询的结果
+SELECT SP.shop_id
        ,SP.shop_name
        ,SP.product_id
        ,P.product_name
        ,P.product_type
        ,P.sale_price
        ,SP.quantity
-  FROM ShopProduct AS SP
- INNER JOIN Product AS P
-    ON SP.product_id = P.product_id
- WHERE SP.shop_name = '东京'
-   AND P.product_type = '衣服' ;
+ FROM ShopProduct AS SP 
+ INNER JOIN product AS P
+ ON SP.product_id = P.product_id
+) AS STEP1
+WHERE shop_name = '东京'
+AND product_type = '衣服';
+```
+**<font color='red'>sql语句需要进行对齐</font>**
+
+还记得我们学习子查询时的认识吗? 子查询的结果其实也是一张表,只不过是一张虚拟的表, 它并不真实存在于数据库中, 只是数据库中其他表经过筛选,聚合等查询操作后得到的一个"视图".
+这种写法能很清晰地分辨出每一个操作步骤, 在我们还不十分熟悉 SQL 查询每一个子句的执行顺序的时候可以帮到我们.
+
+但实际上, 如果我们熟知 WHERE 子句将在 FROM 子句之后执行, 也就是说, 在做完 INNER JOIN ... ON 得到一个新表后, 才会执行 WHERE 子句, 那么就得到标准的写法:
+
+```sql
+SELECT SP.shop_id
+       ,SP.shop_name
+       ,SP.product_id
+       ,P.product_name
+       ,P.product_type
+       ,P.sale_price
+       ,SP.quantity
+FROM ShopProduct AS SP
+INNER JOIN Product AS P
+ON SP.product_id = P.product_id
+WHERE SP.shop_name='东京' AND P.product_type='衣服';
 ```
 我们首先给出上述查询的执行顺序:
 
@@ -538,7 +551,7 @@ FROM 子句->WHERE 子句->SELECT 子句
 
 也就是说, 两张表是先按照连结列进行了连结, 得到了一张新表, 然后 WHERE 子句对这张新表的行按照两个条件进行了筛选,  最后, SELECT 子句选出了那些我们需要的列.
 
-此外, 一种不是很常见的做法是,还可以将 WHERE 子句中的条件直接添加在 ON 子句中, 这时候 ON 子句后最好用括号将连结条件和筛选条件括起来. 
+此外, **一种不是很常见的做法**是,还可以将 WHERE 子句中的条件直接添加在 ON 子句中, 这时候 ON 子句后最好用括号将连结条件和筛选条件括起来.   （把WHERE子句添加到ON子句中）。
 
 ```sql
 SELECT SP.shop_id
@@ -551,30 +564,34 @@ SELECT SP.shop_id
   FROM ShopProduct AS SP
  INNER JOIN Product AS P
     ON (SP.product_id = P.product_id
-   AND SP.shop_name = '东京'
-   AND P.product_type = '衣服') ;
+        AND SP.shop_name = '东京'
+        AND P.product_type = '衣服') ;
 ```
-但上述这种把筛选条件和连结条件都放在 ON 子句的写法, 不是太容易阅读, 不建议大家使用. 
-另外, 先连结再筛选的标准写法的执行顺序是, 两张完整的表做了连结之后再做筛选,如果要连结多张表, 或者需要做的筛选比较复杂时, 在写 SQL 查询时会感觉比较吃力. 在结合 WHERE 子句使用内连结的时候, 我们也可以更改任务顺序, 并采用任务分解的方法,先分别在两个表使用 WHERE 进行筛选,然后把上述两个子查询连结起来.
+但上述这种把筛选条件和连结条件都放在 ON 子句的写法, 不是太容易阅读, 不建议大家使用.  
+另外, 先连结再筛选的标准写法的执行顺序是, 两张完整的表做了连结之后再做筛选,如果要连结多张表, 或者需要做的筛选比较复杂时, 在写 SQL 查询时会感觉比较吃力. 在结合WHERE 子句使用内连结的时候, 我们也可以更改任务顺序, 并采用任务分解的方法,先分别在两个表使用 WHERE 进行筛选,然后把上述两个子查询连结起来.
+
+> - **两张表做了连接后再进行筛选，此时所做的筛选比较复杂；可以通过先分别对两个表使用WHERE进行筛选，然后将两个子查询进行连接。**
 
 ```sql
-SELECT SP.shop_id
-       ,SP.shop_name
-       ,SP.product_id
-       ,P.product_name
-       ,P.product_type
-       ,P.sale_price
-       ,SP.quantity
-  FROM (-- 子查询 1:从 ShopProduct 表筛选出东京商店的信息
-        SELECT *
-          FROM ShopProduct
-         WHERE shop_name = '东京' ) AS SP
- INNER JOIN -- 子查询 2:从 Product 表筛选出衣服类商品的信息
-   (SELECT *
-      FROM Product
-     WHERE product_type = '衣服') AS P
-    ON SP.product_id = P.product_id;
+SELECT  SP.shop_id
+	,SP.shop_name
+	,SP.product_id
+	,P.product_name
+	,P.product_type
+	,P.sale_price
+	,SP.quantity
+FROM (-- 子查询 1:从 ShopProduct 表筛选出东京商店的信息
+	SELECT *
+	FROM ShopProduct
+	WHERE shop_name ='东京') AS SP
+INNER JOIN(-- 子查询 2:从 Product 表筛选出衣服类商品的信息
+	SELECT *
+	FROM product
+	WHERE product_type='衣服') AS P
+ON SP.product_id = P.product_id;
 ```
+**<font color='red'>sql语句需要进行对齐,包括注释</font>**
+
 先分别在两张表里做筛选, 把复杂的筛选条件按表分拆, 然后把筛选结果(作为表)连接起来, 避免了写复杂的筛选条件, 因此这种看似复杂的写法, 实际上整体的逻辑反而非常清晰. 在写查询的过程中, 首先要按照最便于自己理解的方式来写, 先把问题解决了, 再思考优化的问题.
 **练习题:**
 
@@ -1253,6 +1270,3 @@ SELECT SP.shop_id
 第三,我们不知道这样的语法到底还能使用多久.每个 DBMS 的开发者都会考虑放弃过时的语法,转而支持新的语法.虽然并不是马上就不能使用了,但那一天总会到来的.
 
 虽然这么说,但是现在使用这些过时语法编写的程序还有很多,到目前为止还都能正常执行.我想大家很可能会碰到这样的代码,因此还是希望大家能够了解这些知识.
-
-
-
