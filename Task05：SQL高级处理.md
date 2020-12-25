@@ -32,9 +32,9 @@ FROM Product;
 
 得到的结果是:
 
-![图片](img/ch05/ch0501.png)
+![图片](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201225190836.png)
 
-![image-20201225164217335](C:/Users/keen/AppData/Roaming/Typora/typora-user-images/image-20201225164217335.png)
+![image-20201225164217335](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201225190837.png)
 
 我们先忽略生成的新列 - [ranking]， 看下原始数据在PARTITION BY 和 ORDER BY 关键字的作用下发生了什么变化。
 
@@ -43,7 +43,7 @@ PARTITION BY 能够设定窗口对象范围。本例中，为了按照商品种�
 ORDER BY 能够指定按照哪一列、何种顺序进行排序。为了按照销售单价的升序进行排列，我们指定了sale_price。此外，窗口函数中的ORDER BY与SELECT语句末尾的ORDER BY一样，可以通过关键字ASC/DESC来指定升序/降序。省略该关键字时会默认按照ASC，也就是升序进行排序。本例中就省略了上述关键字 。
 
 
-![图片](img/ch05/ch0502.png)
+![图片](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201225190838.png)
 
 
 
@@ -87,7 +87,7 @@ ORDER BY 能够指定按照哪一列、何种顺序进行排序。为了按照�
  FROM Product;
 ```
 
-![图片](img/ch05/ch0503.png)
+![图片](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201225190839.png)
 
 
 ## 5.2.2 聚合函数在窗口函数上的使用
@@ -107,9 +107,9 @@ SELECT  product_id
 FROM Product;  
 ```
 
-![图片](img/ch05/ch0504.png)
+![图片](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201225190840.png)
 
-![图片](img/ch05/ch0505.png)
+![图片](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201225190841.png)
 
 可以看出，聚合函数结果是，按我们指定的排序，这里是product_id，**当前所在行及之前所有的行**的合计或均值。即**累计到当前行的聚合。**
 
@@ -153,11 +153,11 @@ SELECT  product_id
 
 ROWS 2 PRECEDING：
 
-![图片](img/ch05/ch0506.png)
+![图片](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201225190842.png)
 
 ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING：
 
-![图片](img/ch05/ch0507.png)
+![图片](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201225190843.png)
 
 ## 5.3.1 窗口函数适用范围和注意事项
 
@@ -180,15 +180,15 @@ GROUP BY product_type, regist_date WITH ROLLUP; 
 ```
 得到的结果为：
 
-![图片](img/ch05/ch0508.png)
+![图片](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201225190844.png)
 
-![图片](img/ch05/ch0509.png)
+![图片](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201225190845.png)
 
 这里ROLLUP 对product_type, regist_date两列进行合计汇总。结果实际上有**三层聚合，**如下图 模块3是常规的 GROUP BY 的结果，需要注意的是衣服 有个注册日期为空的，这是本来数据就存在日期为空的，不是对衣服类别的合计； 模块2和1是 ROLLUP 带来的合计，模块2是对产品种类的合计，模块1是对全部数据的总计。
 
 ROLLUP 可以对多列进行汇总求小计和合计。
 
-# ![图片](img/ch05/ch0510.png)
+# ![图片](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201225190846.png)
 
 # 练习题
 
@@ -224,7 +224,7 @@ GROUP BY regist_date
 ORDER BY sum_price;
 ```
 
-![image-20201225182607870](C:/Users/keen/AppData/Roaming/Typora/typora-user-images/image-20201225182607870.png)
+![image-20201225182607870](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201225190847.png)
 
 ## **5.3**
 
