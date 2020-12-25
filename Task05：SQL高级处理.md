@@ -210,12 +210,12 @@ FROM Product;
 继续使用Product表，计算出按照登记日期（regist_date）升序进行排列的各日期的销售单价（sale_price）的总额。排序是需要将登记日期为NULL 的“运动 T 恤”记录排在第 1 位（也就是将其看作比其他日期都早）
 
 ```sql
-SELECT product.product_name,product_type,regist_date,
-	SUM(sale_price) OVER(PARTITION BY regist_date) AS sum_price
+SELECT regist_date,product_name,product_type,
+	SUM(sale_price) OVER(ORDER BY regist_date) AS sum_price
 FROM product;
 ```
 
-![image-20201225173352567](C:/Users/keen/AppData/Roaming/Typora/typora-user-images/image-20201225173352567.png)
+![image-20201225185144155](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201225185144.png)
 
 ```sql
 SELECT regist_date,SUM(sale_price) AS sum_price
@@ -238,7 +238,9 @@ ORDER BY sum_price;
 
 > 窗口函数作用是  将group by的作用加聚合函数的作用再进行扩展，窗口函数能做的，group by不一定能做，但group by能做的，窗口函数一定能做。
 
+**执行顺序：** from->where->group by->having->select->order by->limit
 
+#todo
 
 
 
