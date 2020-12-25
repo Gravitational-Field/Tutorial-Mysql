@@ -2,9 +2,9 @@
 
 ## 5.1.1 窗口函数概念及基本的使用方法
 
-窗口函数也称为**OLA****P****函数**。OLAP 是OnLine AnalyticalProcessing 的简称，意思是对数据库数据进行实时分析处理。
+窗口函数也称为**OLAP函数**。OLAP 是OnLine AnalyticalProcessing 的简称，意思是对数据库数据进行实时分析处理。
 
-为了便于理解，称之为窗口函数。常规的SELECT语句都是对整张表进行查询，而窗口函数可以让我们有选择的去某一部分数据进行汇总、计算和排序。
+为了便于理解，称之为窗口函数。常规的SELECT语句都是对整张表进行查询，而窗口函数可以让我们**有选择的去某一部分数据进行汇总、计算和排序。**
 
 窗口函数的通用形式：
 
@@ -27,20 +27,20 @@ SELECT product_name
        ,sale_price
        ,RANK() OVER (PARTITION BY product_type
                          ORDER BY sale_price) AS ranking
-  FROM Product  
+FROM Product;
 ```
 
 得到的结果是:
 
 ![图片](img/ch05/ch0501.png)
 
+![image-20201225164217335](C:/Users/keen/AppData/Roaming/Typora/typora-user-images/image-20201225164217335.png)
+
 我们先忽略生成的新列 - [ranking]， 看下原始数据在PARTITION BY 和 ORDER BY 关键字的作用下发生了什么变化。
 
 PARTITION BY 能够设定窗口对象范围。本例中，为了按照商品种类进行排序，我们指定了product_type。即一个商品种类就是一个小的"窗口"。
 
-ORDER BY 能够指定按照哪一列、何种顺序进行排序。为了按照销售单价的升序进行排列，我们指定了sale_price。此外，窗口函数中的ORDER BY与SELECT语句末尾的ORDER BY一样，可以通过关键字ASC/DESC来指定升序/降序。省略该关键字时会默认按照ASC，也就是
-
-升序进行排序。本例中就省略了上述关键字 。
+ORDER BY 能够指定按照哪一列、何种顺序进行排序。为了按照销售单价的升序进行排列，我们指定了sale_price。此外，窗口函数中的ORDER BY与SELECT语句末尾的ORDER BY一样，可以通过关键字ASC/DESC来指定升序/降序。省略该关键字时会默认按照ASC，也就是升序进行排序。本例中就省略了上述关键字 。
 
 
 ![图片](img/ch05/ch0502.png)
@@ -53,7 +53,7 @@ ORDER BY 能够指定按照哪一列、何种顺序进行排序。为了按照�
 
 一是 将SUM、MAX、MIN等聚合函数用在窗口函数中
 
-二是 RANK、DENSE_RANK等排序用的专用串口函数
+二是 RANK、DENSE_RANK等排序用的专用窗口函数
 
 ## 5.2.1 专用窗口函数
 
@@ -78,13 +78,13 @@ ORDER BY 能够指定按照哪一列、何种顺序进行排序。为了按照�
 运行以下代码：
 
 ```sql
-SELECT  product_name
+ SELECT product_name
        ,product_type
        ,sale_price
        ,RANK() OVER (ORDER BY sale_price) AS ranking
        ,DENSE_RANK() OVER (ORDER BY sale_price) AS dense_ranking
        ,ROW_NUMBER() OVER (ORDER BY sale_price) AS row_num
-  FROM Product  
+ FROM Product;
 ```
 
 ![图片](img/ch05/ch0503.png)
@@ -94,6 +94,8 @@ SELECT  product_name
 
 聚合函数在开窗函数中的使用方法和之前的专用窗口函数一样，只是出来的结果是一个**累计**的聚合函数值。
 
+> **到当前product_id的聚合值。**
+
 运行以下代码：
 
 ```sql
@@ -102,19 +104,19 @@ SELECT  product_id
        ,sale_price
        ,SUM(sale_price) OVER (ORDER BY product_id) AS current_sum
        ,AVG(sale_price) OVER (ORDER BY product_id) AS current_avg  
-  FROM Product;  
+FROM Product;  
 ```
 
 ![图片](img/ch05/ch0504.png)
 
 ![图片](img/ch05/ch0505.png)
 
-可以看出，聚合函数结果是，按我们指定的排序，这里是product_id，**当前所在行及之前所有的行**的合计或均值。即累计到当前行的聚合。
+可以看出，聚合函数结果是，按我们指定的排序，这里是product_id，**当前所在行及之前所有的行**的合计或均值。即**累计到当前行的聚合。**
 
 
 # 5.3 窗口函数的的应用 - 计算移动平均
 
-在上面提到，聚合函数在窗口函数使用时，计算的是累积到当前行的所有的数据的聚合。 实际上，还可以指定更加详细的**汇总范围**。该汇总范围成为**框架(****frame****)。**
+在上面提到，聚合函数在窗口函数使用时，计算的是累积到当前行的所有的数据的聚合。 实际上，还可以指定更加详细的**汇总范围**。该汇总范围成为**框架(frame)。**
 
 语法
 
@@ -159,20 +161,22 @@ ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING：
 
 ## 5.3.1 窗口函数适用范围和注意事项
 
-* 原则上，窗口函数只能在SELECT子句中使用。
-* 窗口函数OVER 中的ORDER BY 子句并不会影响最终结果的排序。其只是用来决定窗口函数按何种顺序计算。
+* 原则上，**窗口函数只能在SELECT子句中使用。**
+* 窗口函数OVER 中的ORDER BY 子句并不会影响最终结果的排序。其**只是用来决定窗口函数按何种顺序计算。**
 # 5.4 GROUPING运算符
 
 ## 5.4.1 ROLLUP - 计算合计及小计
 
-常规的GROUP BY 只能得到每个分类的小计，有时候还需要计算分类的合计，可以用 ROLLUP关键字。
+> 按聚合键分组分类后，对其结果再进行分组分类。
+
+常规的GROUP BY 只能得到每个分类的小计，有时候还需要**计算分类的合计，可以用 ROLLUP关键字。**
 
 ```sql
-SELECT  product_type
+SELECT product_type
        ,regist_date
        ,SUM(sale_price) AS sum_price
-  FROM Product
- GROUP BY product_type, regist_date WITH ROLLUP  
+FROM Product
+GROUP BY product_type, regist_date WITH ROLLUP; 
 ```
 得到的结果为：
 
@@ -180,7 +184,7 @@ SELECT  product_type
 
 ![图片](img/ch05/ch0509.png)
 
-这里ROLLUP 对product_type, regist_date两列进行合计汇总。结果实际上有三层聚合，如下图 模块3是常规的 GROUP BY 的结果，需要注意的是衣服 有个注册日期为空的，这是本来数据就存在日期为空的，不是对衣服类别的合计； 模块2和1是 ROLLUP 带来的合计，模块2是对产品种类的合计，模块1是对全部数据的总计。
+这里ROLLUP 对product_type, regist_date两列进行合计汇总。结果实际上有**三层聚合，**如下图 模块3是常规的 GROUP BY 的结果，需要注意的是衣服 有个注册日期为空的，这是本来数据就存在日期为空的，不是对衣服类别的合计； 模块2和1是 ROLLUP 带来的合计，模块2是对产品种类的合计，模块1是对全部数据的总计。
 
 ROLLUP 可以对多列进行汇总求小计和合计。
 
@@ -190,18 +194,37 @@ ROLLUP 可以对多列进行汇总求小计和合计。
 
 ## **5.1**
 
-请说出针对本章中使用的 Product（商品）表执行如下 SELECT 语句所能得到的结果。
+请说出针对本章中使用的 product（商品）表执行如下 SELECT 语句所能得到的结果。
 
 ```sql
 SELECT  product_id
        ,product_name
        ,sale_price
        ,MAX(sale_price) OVER (ORDER BY product_id) AS Current_max_price
-  FROM Product
+FROM Product;
 ```
+> 按照product_id进行排序，从小id到大id来展示出所有的4列值，且Current_max_price列为到当前为止最大的sale_price值。
+
 ## **5.2**
 
 继续使用Product表，计算出按照登记日期（regist_date）升序进行排列的各日期的销售单价（sale_price）的总额。排序是需要将登记日期为NULL 的“运动 T 恤”记录排在第 1 位（也就是将其看作比其他日期都早）
+
+```sql
+SELECT product.product_name,product_type,regist_date,
+	SUM(sale_price) OVER(PARTITION BY regist_date) AS sum_price
+FROM product;
+```
+
+![image-20201225173352567](C:/Users/keen/AppData/Roaming/Typora/typora-user-images/image-20201225173352567.png)
+
+```sql
+SELECT regist_date,SUM(sale_price) AS sum_price
+FROM product
+GROUP BY regist_date
+ORDER BY sum_price;
+```
+
+![image-20201225182607870](C:/Users/keen/AppData/Roaming/Typora/typora-user-images/image-20201225182607870.png)
 
 ## **5.3**
 
@@ -209,7 +232,11 @@ SELECT  product_id
 
 ① 窗口函数不指定PARTITION BY的效果是什么？
 
+> 将会把所有的当作一个组，进行处理。
+
 ② 为什么说窗口函数只能在SELECT子句中使用？实际上，在ORDER BY 子句使用系统并不会报错。
+
+> 窗口函数作用是  将group by的作用加聚合函数的作用再进行扩展，窗口函数能做的，group by不一定能做，但group by能做的，窗口函数一定能做。
 
 
 
