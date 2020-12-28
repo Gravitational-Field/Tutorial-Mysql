@@ -12,7 +12,23 @@
 | 4  | Max   | 90000  | 1            |
 +----+-------+--------+--------------+
 ```
+```sql
+CREATE TABLE employee(
+	id INTEGER NOT NULL,
+	NAME VARCHAR(30) NOT NULL,
+	salary FLOAT,
+	departmentid INTEGER NOT NULL,
+	PRIMARY KEY(id)
+);
+
+INSERT INTO employee VALUES(1,'joe',70000,1),
+(2,'henry',80000,2),(3,'sam',60000,2),(4,'max',90000,1);
+```
+
+
+
 创建Department 表，包含公司所有部门的信息。
+
 ```plain
 +----+----------+
 | Id | Name     |
@@ -21,6 +37,15 @@
 | 2  | Sales    |
 +----+----------+
 ```
+```sql
+CREATE TABLE department(
+	id INTEGER NOT NULL,
+	NAME VARCHAR(30),
+	PRIMARY KEY(id)
+);
+INSERT INTO department VALUES(1,'it'),(2,'sale');
+```
+
 编写一个 SQL 查询，找出每个部门工资最高的员工。例如，根据上述给定的表格，Max 在 IT 部门有最高工资，Henry 在 Sales 部门有最高工资。
 ```plain
 +------------+----------+--------+
@@ -30,6 +55,43 @@
 | Sales      | Henry    | 80000  |
 +------------+----------+--------+
 ```
+
+- 错误1
+
+```sql
+-- 想的是直接利用内连接，进行分组，分组进行统计时，无法按照E.name和D.name共同分组，且
+SELECT D.`name` AS Department,E.`name` AS Employee,MAX(E.`salary`) AS salary
+FROM department AS D INNER JOIN employee AS E
+ON E.`departmentid`=D.`id`
+GROUP BY D.`name`,E.`name`;
+```
+
+![image-20201226153708304](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201226153708.png)
+
+> 思考： 
+>
+> ​	扩列使用内连接，也需要按照分组找到max的salary，且两项都是employee表的内容。
+>
+> 1.  在employee中分组，找到部门对应工资最高（无法直接找到最高的人），作为临时表EE
+> 2. 使用自内连接，找到最高的人。最为临时表EEE
+> 3. 再进行与department内连接，通过departmentid来得到department的name
+
+- 正确方式
+
+```sql
+SELECT D.`name` AS Department,EEE.name AS Employee,EEE.max_salary AS Salary
+FROM (SELECT E2.departmentid,EE.max_salary,E2.name
+	FROM (
+		SELECT E.`departmentid`,MAX(E.`salary`) AS max_salary
+		FROM employee AS E
+		GROUP BY E.`departmentid`) AS EE INNER JOIN employee AS E2
+		ON E2.departmentid=EE.`departmentid` AND E2.salary=EE.max_salary) AS EEE
+		INNER JOIN department AS D
+		ON D.`id`=EEE.departmentid
+		ORDER BY salary DESC;
+```
+
+![image-20201228195453837](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201228195453.png)
 
 # 练习二: 换座位（难度：中等）
 
@@ -71,6 +133,41 @@
 **注意：**
 如果学生人数是奇数，则不需要改变最后一个同学的座位。
 
+> 思考：
+>
+> 可以通过分类别：奇数的id+1，偶数的id-1，最后一个为奇数时，不变。进行结果的union，并按照id进行排序。
+
+```sql
+CREATE TABLE IF NOT EXISTS seat(id INTEGER NOT NULL,student VARCHAR(20) NOT NULL,PRIMARY KEY(id));
+TRUNCATE TABLE seat;
+DROP TABLE seat;
+
+INSERT INTO seat VALUES(1,'Abbot'),(2,'Doris'),(3,'Emerson'),(4,'Green'),(5,'Jeames');
+
+
+-- 方法一：采用UNION的方式，对各个可能的结果进行分类处理后联合起来。
+SELECT s.id,s.student
+FROM (
+	SELECT id+1 AS id,student FROM seat WHERE MOD(id,2)!=0 AND id!=(SELECT COUNT(*) FROM seat)
+	UNION
+	SELECT id-1 AS id,student FROM seat WHERE MOD(id,2)=0
+	UNION
+	SELECT id,student FROM seat WHERE id=(SELECT COUNT(*) FROM seat)
+)AS s
+ORDER BY s.id;
+
+
+-- 方法2：使用CASE WHEN表达式，对最后一位不管是奇数还是偶数处理的都很好，推荐这种
+SELECT (CASE
+      WHEN MOD(id,2)!=0 AND id!=counts THEN id+1 -- 奇数
+      WHEN MOD(id,2)!=0 AND id=counts THEN id -- 最后一位是奇数
+      ELSE id-1 END)AS id,student -- 偶数
+      FROM seat,(SELECT COUNT(*)AS counts FROM seat)AS seat_counts
+ORDER BY id;
+```
+
+
+
 
 # 练习三:  分数排名（难度：中等）
 
@@ -90,7 +187,7 @@
 | 6  | 3.65  |
 +----+-------+
 ```
-例如，根据上述给定的 Scores 表，你的查询应该返回（按分数从高到低排列）：
+例如，根据上述给定的 Score表，你的查询应该返回（按分数从高到低排列）：
 ```plain
 +-------+------+
 | Score | Rank |
@@ -103,6 +200,23 @@
 | 3.50  | 4    |
 +-------+------+
 ```
+> 思考：对分数进行排名，笨办法自连接，子查询，来确定每一个大于等于它的；也可以使用task05中的窗口函数，DENSE_RANK能够满足要求，不过要考虑parttion 和 order by
+
+```sql
+CREATE TABLE IF NOT EXISTS score(
+	id INTEGER NOT NULL,
+	score FLOAT NOT NULL,
+	PRIMARY KEY(id)
+);
+TRUNCATE TABLE score;
+
+INSERT INTO score VALUES(1,3.50),(2,3.65),(3,4.00),(4,3.85),(5,4.00),(6,3.65);
+
+
+SELECT score,DENSE_RANK() OVER (ORDER BY score DESC) AS 'rank'
+FROM score;
+```
+
 # 练习四：连续出现的数字（难度：中等）
 
 编写一个 SQL 查询，查找所有至少连续出现三次的数字。
@@ -128,6 +242,32 @@
 | 1               |
 +-----------------+
 ```
+> 思考：
+>
+> 	1. 笨办法，自连接三个
+> 	2. 至少连续出现3次，可以考虑窗口？precding 和 following
+
+```sql
+CREATE TABLE IF NOT EXISTS LOGS (
+	id INTEGER NOT NULL,
+	num INTEGER NOT NULL,
+	PRIMARY KEY(id)
+);
+TRUNCATE TABLE LOGS;
+INSERT INTO LOGS VALUES(1,1),(2,1),(3,1),(4,2),(5,1),(6,2),(7,2);
+
+-- 笨方法
+SELECT DISTINCT(l1.`num`) AS ConsecutiveNums
+FROM LOGS AS l1 INNER JOIN LOGS AS l2 INNER JOIN LOGS AS l3
+WHERE l1.id=l2.`id`-1 AND l2.`id`=l3.`id`-1
+AND l1.`num`=l2.`num` AND l2.`num`=l3.`num`;
+
+-- 考虑固定长度的窗口
+-- 出不来
+```
+
+
+
 # 练习五：树节点 （难度：中等）
 
 对于**tree**表，*id*是树节点的标识，*p_id*是其父节点的*id*。
@@ -162,6 +302,7 @@
 +----+------+
 ```
 **说明**
+
 * 节点’1’是根节点，因为它的父节点为NULL，有’2’和’3’两个子节点。
 * 节点’2’是内部节点，因为它的父节点是’1’，有子节点’4’和’5’。
 * 节点’3’，‘4’，'5’是叶子节点，因为它们有父节点但没有子节点。
@@ -178,9 +319,69 @@
 
 如果一个树只有一个节点，只需要输出根节点属性。
 
+> 思考：
+>
+> 两种思路：
+>
+> 1. 存在的三种类型，进行集合的union
+>
+> 2. 使用case语句进行分条件判断
+>
+> 2. 叶子节点
+>
+>    没有子节点的节点为叶子节点。故要找到t1  t2，t1 做本表，t2的父为t1，在其中筛选，找t2中没有父的，则为
+>
+> 
+
+```sql
+USE shop;
+
+CREATE TABLE IF NOT EXISTS tree(
+	id INTEGER,
+	p_id INTEGER
+);
+TRUNCATE tree;
+
+INSERT INTO tree VALUES(1,NULL),(2,1),(3,1),(4,2),(5,2);
+SELECT * FROM tree;
+
+-- 根节点查询 --
+SELECT  id,  @Type := 'Root' AS Type 
+FROM  tree WHERE  p_id IS NULL;
+
+-- 内部节点查询 --
+-- 内部节点：其父节点存在并且子节点也存在
+SELECT  id,  @Type := 'Inner' AS Type
+FROM  tree-- 
+WHERE  id IN ( SELECT DISTINCT p_id FROM tree WHERE p_id IS NOT NULL )-- 作为父节点，有子
+     AND p_id IN ( SELECT DISTINCT id FROM tree WHERE id IS NOT NULL );-- 作为子节点，有父
+     
+-- 叶子节点查询 --
+SELECT  id,  @Type := 'Leaf' AS Type 
+FROM  tree-- 节点不为父的节点
+WHERE  id not in(SELECT DISTINCT p_id FROM tree WHERE p_id is not null);
+
+
+-- 解法：case条件分支判断解决
+SELECT  id,  (  CASE      WHEN p_id IS NULL THEN 'Root'       WHEN id NOT IN ( SELECT DISTINCT p_id FROM tree WHERE p_id IS NOT NULL ) THEN  'Leaf'      ELSE 'Inner'     END   ) AS Type FROM  tree;
+```
+
+- case条件分支判断
+
+```sql
+-- 解法：case条件分支判断解决
+SELECT  id, (CASE   
+WHEN p_id IS NULL THEN 'Root'       
+WHEN id NOT IN ( SELECT DISTINCT p_id FROM tree WHERE p_id IS NOT NULL ) THEN  'Leaf'
+ELSE 'Inner' END) AS TYPE
+FROM  tree;
+```
+
+
+
 # 练习六：至少有五名直接下属的经理 （难度：中等）
 
-**Employee**表包含所有员工及其上级的信息。每位员工都有一个Id，并且还有一个对应主管的Id（ManagerId）。
+**Employee1**表包含所有员工及其上级的信息。每位员工都有一个Id，并且还有一个对应主管的Id（ManagerId）。
 
 ```plain
 +------+----------+-----------+----------+
@@ -194,7 +395,7 @@
 |106   |Ron 	  |B 	      |101       |
 +------+----------+-----------+----------+
 ```
-针对**Employee**表，写一条SQL语句找出有5个下属的主管。对于上面的表，结果应输出：
+针对**Employee1**表，写一条SQL语句找出有5个下属的主管。对于上面的表，结果应输出：
 
 ```plain
 +-------+
@@ -206,6 +407,39 @@
 **注意:**
 
 没有人向自己汇报。
+
+>思考：
+>
+>
+>
+
+```sql
+-- 6
+create table if not exists employee1(
+	id integer,
+	name varchar(20),
+	department varchar(5),
+	managerid integer
+);
+truncate table employee1;
+
+desc employee1;
+select * from employee1;
+
+insert into employee1 values(101,'Jhon','A',null),
+(102,'Dan','A',101),(103,'James','A',101),
+(104,'Amy','A',101),(105,'Anne','A',101),
+(106,'Ron','B',101);
+
+select name as 'Name'
+from employee1
+where id = (select managerid
+		from employee1
+		group by managerid
+		having count(managerid)=5);
+```
+
+
 
 
 # 练习七: 分数排名  （难度：中等）
@@ -224,6 +458,19 @@
 | 3.50  | 6    |
 +-------+------
 ```
+> 思考：
+>
+> 
+
+```sql
+SELECT * FROM score;
+
+SELECT score AS 'Score',RANK() OVER(ORDER BY score DESC) AS 'Rank'
+FROM score;
+```
+
+
+
 # 练习八：查询回答率最高的问题 （难度：中等）
 
 求出**survey_log**表中回答率最高的问题，表格的字段有：**uid, action, question_id, answer_id, q_num, timestamp**。
@@ -255,9 +502,25 @@ uid是用户id；action的值为：“show”， “answer”， “skip”；�
 
 **注意：**最高回答率的意思是：同一个问题出现的次数中回答的比例。
 
+> 求比率问题：
+>
+> (sum(case when `action` like 'answer' then 1 else 0 end) / sum(case when `action` like 'show' then 1 else 0 end)) as rate
+
+```sql
+select question_id as survey_log
+from(
+select (sum(case when `action` like 'answer' then 1 else 0 end) / sum(case when `action` is not null then 1 else 0 end)) as rate,question_id
+from survey_log
+group by question_id
+order by rate desc
+limit 1) as x;
+```
+
+
+
 # 练习九：各部门前3高工资的员工（难度：中等）
 
-将项目7中的employee表清空，重新插入以下数据（其实是多插入5,6两行）：
+将项目1中的employee表清空，重新插入以下数据（其实是多插入5,6两行）：
 
 ```plain
 +----+-------+--------+--------------+
@@ -284,6 +547,39 @@ uid是用户id；action的值为：“show”， “answer”， “skip”；�
 +------------+----------+--------+
 ```
 此外，请考虑实现各部门前N高工资的员工功能。
+
+> 思考：
+>
+> 每个部门工资前3高的员工
+>
+> 按部门分组进行查询，
+
+[解析一道笔试题目：查找各个部门工资最高的前3名员工信息  —— 很全面，多种解法](https://blog.csdn.net/seagal890/article/details/83034768)
+
+```sql
+select * from employee;
+
+insert into employee values(5,'janet',69000,1),
+(6,'randy',85000,1);
+
+
+select e2.* from(
+select departmentid,name,salary,rank() over(partition by departmentid order by salary Desc) as 'rank'
+from employee as e1
+) as e2
+where e2.rank in (1,2,3)
+
+select * from department;
+
+select d.name as 'Department',e3.name as 'Employee',salary as 'Salary'
+from department as d inner join (
+	SELECT e2.departmentid,e2.name,e2.salary 
+	FROM(
+		SELECT e1.departmentid,e1.name,e1.salary,RANK() OVER(PARTITION BY departmentid ORDER BY salary DESC) AS 'rank'
+		FROM employee AS e1) AS e2
+	WHERE e2.rank IN (1,2,3)) as e3
+on e3.departmentid=d.`id`;
+```
 
 # 练习十：平面上最近距离 (难度: 困难）
 
@@ -312,6 +608,27 @@ uid是用户id；action的值为：“show”， “answer”， “skip”；�
 +--------+
 ```
 **注意：**所有点的最大距离小于10000。
+
+```sql
+CREATE TABLE point_2d(
+	X INTEGER,
+	Y INTEGER
+);
+TRUNCATE TABLE point_2d;
+
+INSERT INTO point_2d VALUES(-1,-1),
+(0,0),(-1,-2);
+
+SELECT * FROM point_2d;
+
+SELECT * FROM point_2d AS p1
+
+SELECT MIN(SQRT(POW(p1.x-p2.x,2)+POW(p1.y-p2.y,2))) AS shortest
+FROM point_2d AS p1 INNER JOIN point_2d AS p2
+ON p1.x <> p2.x OR p1.y <> p2.y;
+```
+
+![image-20201228220503402](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201228220503.png)
 
 # 练习十一：行程和用户（难度：困难）
 
