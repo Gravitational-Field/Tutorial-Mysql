@@ -674,6 +674,67 @@ Users 表存所有用户。每个用户有唯一键 Users_Id。Banned 表示这
 +------------+-------------------+
 ```
 
+> 求比率，可以考虑上边的求比率的例子。
+>
+> 先创建两个表，对任务进行分解。
+
+```sql
+CREATE TABLE trips(
+	id INTEGER,
+	client_id INTEGER,
+	driver_id INTEGER,
+	city_id INTEGER,
+	STATUS VARCHAR(30),
+	request_at DATE
+);
+TRUNCATE TABLE trips;
+
+
+DESC trips;
+
+INSERT INTO trips VALUES(1,1,10,1,'completed','2013-10-1'),
+(2,2,11,1,'cancelled_by_driver','2013-10-1'),(3,3,12,6,'completed','2013-10-1'),
+(4,4,13,6,'cancelled_by_client','2013-10-1'),(5,1,10,1,'completed','2013-10-2'),
+(6,2,11,6,'completed','2013-10-2'),(7,3,12,6,'completed','2013-10-2'),
+(8,2,12,12,'completed','2013-10-3'),(9,3,10,12,'completed','2013-10-3'),
+(10,4,13,12,'cancelled_by_driver','2013-10-3');
+
+SELECT * FROM trips;
+
+
+CREATE TABLE users(
+	user_id INTEGER,
+	banned VARCHAR(5),
+	ROLE ENUM('client','driver','partner')
+);
+TRUNCATE TABLE users;
+
+INSERT INTO users VALUES(1,'No',1),
+(2,'Yes',1),(3,'No',1),(4,'No',1),
+(10,'No',2),(11,'No',2),(12,'No',2),
+(13,'No',2);
+
+DROP TABLE users;
+SELECT * FROM users;
+
+-- 查出2013年10月1日至2013年10月3日期间非禁止用户的取消率
+-- 先查询出2013年10月1日至2013年10月3日的所有用户
+-- 非禁止用户的数量  以及  非禁止用户的取消了的数量
+
+SELECT t.`client_id`,t.`status`,t.`request_at`
+FROM trips AS t
+WHERE request_at BETWEEN '2013-10-1' AND '2013-10-3'
+
+
+SELECT 
+request_at AS 'Day',
+ROUND(SUM(CASE WHEN t.status LIKE 'cancelled_%' THEN 1 ELSE 0 END)/COUNT(*),2) AS rate
+FROM trips AS t
+INNER JOIN users AS u
+ON t.`client_id`=u.user_id AND u.banned='No'
+GROUP BY request_at
+```
+
 
 
 
