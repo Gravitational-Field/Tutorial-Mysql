@@ -16,12 +16,12 @@
 
 #### 补充
 
-- [Task00：绪论 - 环境搭建.md](Task00：绪论 - 环境搭建.md)
+- [Task00：绪论_环境搭建.md](Task00：绪论_环境搭建.md)
 - [Task01：初识数据库.md](Task01：初识数据库.md)
 - [Task02：基础查询与排序.md](Task02：基础查询与排序.md)
 
 
 
-- [附录1 - SQL 语法规范.md](附录1 - SQL 语法规范.md)
+- [附录1_SQL 语法规范.md](附录1_SQL 语法规范.md)
 - [shop.sql](shop.sql)
 

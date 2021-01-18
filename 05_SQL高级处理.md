@@ -188,7 +188,7 @@ GROUP BY product_type, regist_date WITH ROLLUP; 
 
 ROLLUP 可以对多列进行汇总求小计和合计。
 
-# ![图片](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201225190846.png)
+![图片](https://cdn.jsdelivr.net/gh/lizhangjie316/img/2020/20201225190846.png)
 
 # 练习题
 
