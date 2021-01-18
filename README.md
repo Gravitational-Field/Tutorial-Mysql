@@ -22,6 +22,6 @@
 
 
 
-- [附录1_SQL 语法规范.md](附录1_SQL 语法规范.md)
+- [附录1_SQL语法规范.md](附录1_SQL语法规范.md)
 - [shop.sql](shop.sql)
 
